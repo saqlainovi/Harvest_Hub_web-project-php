@@ -1,0 +1,33 @@
+<?php
+// Database connection
+$db_host = "localhost";
+$db_user = "root"; // Laragon username
+$db_pass = "root"; // Common Laragon MySQL password
+$db_name = "fresh_harvest";
+
+// Create connection with error suppression
+$conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+
+// Check connection
+if ($conn->connect_error) {
+    // Log error instead of outputting HTML for API endpoints
+    error_log("Database connection failed: " . $conn->connect_error);
+    
+    // If this is a JSON API endpoint, return proper JSON error
+    if (strpos($_SERVER["SCRIPT_NAME"], "/pages/firebase_auth.php") !== false ||
+        strpos($_SERVER["SCRIPT_NAME"], "/pages/firebase_register.php") !== false) {
+        header("Content-Type: application/json");
+        echo json_encode([
+            "success" => false, 
+            "message" => "Database connection failed"
+        ]);
+        exit;
+    }
+    
+    // Otherwise show normal error for HTML pages
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Set character set
+$conn->set_charset("utf8mb4");
+?> 

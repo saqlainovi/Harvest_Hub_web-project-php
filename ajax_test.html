@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Auth AJAX Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; max-height: 300px; }
+        button { padding: 10px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; margin-right: 10px; }
+        #results { margin-top: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .container { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+        h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Authentication AJAX Test</h1>
+    
+    <div>
+        <button id="test-auth">Test Original Endpoint</button>
+        <button id="test-debug">Test Debug Endpoint</button>
+    </div>
+    
+    <div class="container">
+        <h2>Original Endpoint Test</h2>
+        <div id="results-original">
+            <div>
+                <h3>Response Status</h3>
+                <div id="status-original"></div>
+            </div>
+            <div>
+                <h3>Raw Response</h3>
+                <pre id="raw-response-original"></pre>
+            </div>
+            <div>
+                <h3>Parsed JSON (if valid)</h3>
+                <pre id="parsed-json-original"></pre>
+            </div>
+            <div>
+                <h3>HTML Content (if invalid JSON)</h3>
+                <div id="html-content-original"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Debug Endpoint Test</h2>
+        <div id="results-debug">
+            <div>
+                <h3>Response Status</h3>
+                <div id="status-debug"></div>
+            </div>
+            <div>
+                <h3>Raw Response</h3>
+                <pre id="raw-response-debug"></pre>
+            </div>
+            <div>
+                <h3>Parsed JSON (if valid)</h3>
+                <pre id="parsed-json-debug"></pre>
+            </div>
+            <div>
+                <h3>Debug Steps</h3>
+                <pre id="debug-steps"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function testEndpoint(endpoint, statusId, rawId, parsedId, htmlId, stepsId) {
+            // Clear previous results
+            document.getElementById(statusId).textContent = 'Sending request...';
+            document.getElementById(rawId).textContent = '';
+            document.getElementById(parsedId).textContent = '';
+            if (htmlId) document.getElementById(htmlId).innerHTML = '';
+            if (stepsId) document.getElementById(stepsId).textContent = '';
+            
+            // Send test request
+            fetch('/asraf%20idp2/pages/' + endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwibmFtZSI6IlRlc3QgVXNlciIsImlhdCI6MTUxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+                })
+            })
+            .then(response => {
+                // Show response status
+                document.getElementById(statusId).textContent = 
+                    `Status: ${response.status} ${response.statusText}`;
+                
+                // Get raw response text
+                return response.text();
+            })
+            .then(text => {
+                // Show raw response
+                document.getElementById(rawId).textContent = text;
+                
+                // Try to parse as JSON
+                try {
+                    const data = JSON.parse(text);
+                    document.getElementById(parsedId).textContent = 
+                        JSON.stringify(data, null, 2);
+                    document.getElementById(parsedId).className = 'success';
+                    
+                    // Extract debug steps if available
+                    if (stepsId && data.debug && data.debug.steps) {
+                        document.getElementById(stepsId).textContent = 
+                            JSON.stringify(data.debug.steps, null, 2);
+                    }
+                } catch (e) {
+                    // If not valid JSON, show error
+                    document.getElementById(parsedId).textContent = 
+                        `Error: ${e.message}`;
+                    document.getElementById(parsedId).className = 'error';
+                    
+                    // Display the HTML content if appropriate
+                    if (htmlId) {
+                        document.getElementById(htmlId).innerHTML = text;
+                    }
+                }
+            })
+            .catch(error => {
+                // Show any fetch errors
+                document.getElementById(statusId).textContent = 
+                    `Fetch error: ${error.message}`;
+                document.getElementById(statusId).className = 'error';
+            });
+        }
+        
+        document.getElementById('test-auth').addEventListener('click', function() {
+            testEndpoint(
+                'firebase_auth.php', 
+                'status-original', 
+                'raw-response-original', 
+                'parsed-json-original', 
+                'html-content-original'
+            );
+        });
+        
+        document.getElementById('test-debug').addEventListener('click', function() {
+            testEndpoint(
+                'firebase_auth_debug.php', 
+                'status-debug', 
+                'raw-response-debug', 
+                'parsed-json-debug', 
+                null, 
+                'debug-steps'
+            );
+        });
+    </script>
+</body>
+</html> 
