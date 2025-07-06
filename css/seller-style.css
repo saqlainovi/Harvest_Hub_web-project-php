@@ -1,0 +1,26 @@
+/* Payment Status Badges */
+.payment-status-pending {
+    background-color: #f8c146;
+    color: #856404;
+}
+
+.payment-status-completed {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.payment-status-failed {
+    background-color: #f44336;
+    color: white;
+}
+
+.payment-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.payment-label {
+    font-weight: 500;
+} 
